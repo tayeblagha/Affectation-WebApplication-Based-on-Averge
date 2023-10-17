@@ -1,0 +1,15 @@
+version: '3' # optional since v1.27.0
+services:
+  docker-frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    ports:
+      - '4200:4200'
+    volumes:
+      - ./src:/frontend/src
+    networks:
+      - spring-mysql
+networks:
+  spring-mysql:
+    driver: bridge
