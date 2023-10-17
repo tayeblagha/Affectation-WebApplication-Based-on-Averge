@@ -3,6 +3,8 @@
 **Description**
 
 This project is aimed at automatically allocating projects to students based on their choices and academic performance. It is developed using Spring Boot with Java JDK 17 and Angular with Node:14.20 as frontend.
+
+
 ![Project Affectation](https://github.com/taieblagha/taieblagha/blob/main/Affect0.png?raw=true)
 ![Project Affectation](https://github.com/taieblagha/taieblagha/blob/main/Affect1.png?raw=true)
 ![Project Affectation](https://github.com/taieblagha/taieblagha/blob/main/Affect2.png?raw=true)
