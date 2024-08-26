@@ -1,32 +1,33 @@
 package com.example.demo.model;
 
+import javax.persistence.*;
+import java.util.ArrayList;
 import java.util.List;
 
-import javax.persistence.Column;
-import javax.persistence.ElementCollection;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.JoinTable;
-import javax.persistence.ManyToMany;
-import javax.persistence.Table;
-import javax.persistence.JoinColumn;
-
 @Entity
-@Table(name="Student")
+@Table(name = "Student")
 public class Student {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private int id;
+
 	@Column(name = "nom")
-	private String nom ;
+	private String nom;
+
 	@Column(name = "moyen")
-	private double  moyen;
-	
-    
-	
+	private double moyen;
+
+	@ManyToMany
+	@JoinTable(
+			name = "student_project",
+			joinColumns = @JoinColumn(name = "student_id"),
+			inverseJoinColumns = @JoinColumn(name = "project_id")
+	)
+	@OrderColumn(name = "project_order") // This ensures the order of projects is maintained in the database
+	private List<Project> projects = new ArrayList<>();
+
+	// Getters and Setters
 	public int getId() {
 		return id;
 	}
@@ -51,8 +52,25 @@ public class Student {
 		this.moyen = moyen;
 	}
 
-	public Student() {
-		super();
+	public List<Project> getProjects() {
+		return projects;
 	}
 
+	public void setProjects(List<Project> projects) {
+		if (projects.size() > 3) {
+			throw new IllegalArgumentException("A student can be associated with a maximum of 3 projects.");
+		}
+		this.projects = projects;
+	}
+
+	public void addProject(Project project,int number) {
+		if (projects.size() >= number) {
+			throw new IllegalStateException("A student can only have up to 3 projects.");
+		}
+		projects.add(project);
+	}
+
+	public void removeProject(Project project) {
+		projects.remove(project);
+	}
 }
