@@ -1,21 +1,16 @@
 package com.example.demo.controller;
 
 import com.example.demo.exception.ResourceNotFoundException;
-import com.example.demo.model.NumberOfProjectsForEachStudent;
 import com.example.demo.model.Project;
 import com.example.demo.model.Student;
-import com.example.demo.repository.NumberOfProjectStudentRepository;
 import com.example.demo.repository.ProjectRepository;
 import com.example.demo.repository.StudentRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.context.event.ApplicationReadyEvent;
-import org.springframework.context.event.EventListener;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @RestController
 @CrossOrigin(origins = "*")
@@ -27,40 +22,21 @@ public class StudentController {
 
     @Autowired
     private ProjectRepository projectRepository;
-    @Autowired
-    private NumberOfProjectStudentRepository numStPr ;
+    // Static variable to store the max number of projects per student
+    private static int maxProjectsPerStudent = 3;  // default value
 
-    // NumberOfProjectsForEachStudent CRUD
-    @EventListener(ApplicationReadyEvent.class)
-    public void addColumnAuto() {
-        try {
-            int num = (int) numStPr.count();
-            if (num == 0) {
-                NumberOfProjectsForEachStudent numb = new NumberOfProjectsForEachStudent();
-                numb.setNum(4);
-                numStPr.save(numb);
-            }
-        } catch (Exception e) {
-            // Log the exception or handle it accordingly
-            e.printStackTrace();
-        }
-    }
+    // Update the max number of projects
     @PutMapping("/max_project")
-    public ResponseEntity<NumberOfProjectsForEachStudent> updateNumPrSt( @RequestBody NumberOfProjectsForEachStudent numPrStudent){
-        NumberOfProjectsForEachStudent  numPrS = numStPr.findById(1)
-                .orElseThrow(() -> new ResourceNotFoundException("Project not exist with id :" + 1));
-
-        numPrS.setNum(numPrStudent.getNum());
-        NumberOfProjectsForEachStudent n = numStPr.save(numPrS);
-        return ResponseEntity.ok(n);
+    public ResponseEntity<Integer> updateMaxProjects(@RequestBody int newMaxProjects) {
+        maxProjectsPerStudent = newMaxProjects;  // update static variable
+        return ResponseEntity.ok(maxProjectsPerStudent);
     }
+
+    // Get the current max number of projects
     @GetMapping("/max_project")
-    public int  GetNumberOfPrST(){
-
-        return	numStPr.findAll().get(0).getNum();
-
+    public ResponseEntity<Integer> getMaxProjects() {
+        return ResponseEntity.ok(maxProjectsPerStudent);
     }
-
 
     @GetMapping("/")
     public List<Student> getAllStudents() {
@@ -84,8 +60,8 @@ public class StudentController {
         Student student = studentRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Student not exist with id :" + id));
 
-        student.setMoyen(studentDetails.getMoyen());
-        student.setNom(studentDetails.getNom());
+        student.setName(studentDetails.getName());
+        student.setAverage(studentDetails.getAverage());
 
         Student updatedStudent = studentRepository.save(student);
         return ResponseEntity.ok(updatedStudent);
@@ -111,19 +87,26 @@ public class StudentController {
     }
 
 
-
     // Add project to student
     @PostMapping("/{studentId}/projects/{projectId}")
     public ResponseEntity<Student> addProjectToStudent(@PathVariable int studentId, @PathVariable int projectId) {
         Student student = studentRepository.findById(studentId).orElse(null);
         Project project = projectRepository.findById(projectId).orElse(null);
-
-        if (student == null || project == null) {
+        if (student == null || project == null ) {
             return ResponseEntity.notFound().build();
+        }
+        HashSet<Integer> projectIds = new HashSet<>();
+        for (Project p : student.getProjects()) {
+            projectIds.add(p.getId());
+        }
+
+        // Check if the project already exists for the student
+        if (projectIds.contains(projectId)) {
+            return ResponseEntity.status(400).body(student); // Project already added
         }
 
         try {
-            student.addProject(project,GetNumberOfPrST());
+            student.addProject(project, maxProjectsPerStudent);
             studentRepository.save(student);
             return ResponseEntity.ok(student);
         } catch (IllegalStateException e) {
@@ -150,5 +133,59 @@ public class StudentController {
         student.removeProject(project);
         studentRepository.save(student);
         return ResponseEntity.ok(student);
+    }
+    // Find Available Projects for Student
+    // Get projects for a student
+    public HashSet<Integer> Get_All_Projects_Id(){
+        HashSet<Integer> project_set = new HashSet<>();
+        for (Project p : projectRepository.findAll()){
+            project_set.add(p.getId());
+        }
+        return project_set;
+    }
+    @GetMapping("/{studentId}/availableprojects")
+    public ResponseEntity<List<Project>> getStudentAvailableProjects(@PathVariable int studentId) {
+        Student student = studentRepository.findById(studentId).orElse(null);
+        if (student == null ) {
+            return ResponseEntity.notFound().build();
+        }
+
+        if ( student.getProjects().size() >= maxProjectsPerStudent ) {
+            return null;
+        }
+        HashSet<Integer> project_set = new HashSet<>();
+        for (Project p :  student.getProjects()) {
+            project_set.add(p.getId());
+        }
+        List<Project> allProject = projectRepository.findAll();
+        List<Project> availableProjects = new ArrayList<Project>();
+
+        for (Project p : allProject) {
+            if (project_set.contains(p.getId())) {
+                continue;
+            }
+            availableProjects.add(p);
+        }
+        return ResponseEntity.ok(availableProjects);
+    }
+
+    @GetMapping("/affectation")
+    public Map<String,String>  affectStudent() {
+        Map<String,String> affectationList = new HashMap<String,String>();
+        HashSet<Integer>  project_IDS= projectRepository.findAll()
+                .stream()
+                .map(Project::getId)
+                .collect(Collectors.toCollection(HashSet::new));
+
+        for  (Student s: getAllStudents()){
+            for  (Project p: s.getProjects()){
+                if (project_IDS.contains(p.getId())  ){
+                    project_IDS.remove(p.getId());
+                    affectationList.put(s.getName(),p.getName());
+                    break;
+                }
+            }
+        }
+        return affectationList;
     }
 }

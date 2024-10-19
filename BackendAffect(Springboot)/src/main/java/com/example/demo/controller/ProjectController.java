@@ -51,7 +51,7 @@ public class ProjectController implements EventListener {
 	public ResponseEntity<Map<String, Boolean>> deleteProject(@PathVariable Integer id) {
 		Project project = projectRepository.findById(id)
 				.orElseThrow(() -> new ResourceNotFoundException("Project not exist with id :" + id));
-
+		projectRepository.deleteFromStudentProjectByProjectId(id);
 		projectRepository.delete(project);
 		Map<String, Boolean> response = new HashMap<>();
 		response.put("deleted", Boolean.TRUE);

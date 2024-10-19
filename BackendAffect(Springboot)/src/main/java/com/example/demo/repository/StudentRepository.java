@@ -9,6 +9,6 @@ import java.util.List;
 @Repository
 public interface StudentRepository extends JpaRepository<Student, Integer> {
     // Or if you want it in descending order
-    List<Student> findAllByOrderByMoyenDesc();
+    List<Student> findAllByOrderByAverageDesc();
 
 }

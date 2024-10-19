@@ -13,8 +13,6 @@ public class Project {
 	@Column(name="name")
 	private String name;
 
-
-
 	// Getters and Setters
 	public int getId() {
 		return id;

@@ -11,14 +11,14 @@ public class Student {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private int id;
+	@Column(name = "name")
+	private String name;
 
-	@Column(name = "nom")
-	private String nom;
+	@Column(name = "average")
+	private double average;
 
-	@Column(name = "moyen")
-	private double moyen;
+	@ManyToMany(cascade = {CascadeType.ALL, CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REMOVE})
 
-	@ManyToMany
 	@JoinTable(
 			name = "student_project",
 			joinColumns = @JoinColumn(name = "student_id"),
@@ -36,32 +36,27 @@ public class Student {
 		this.id = id;
 	}
 
-	public String getNom() {
-		return nom;
+	public String getName() {
+		return name;
 	}
 
-	public void setNom(String nom) {
-		this.nom = nom;
+	public void setName(String name) {
+		this.name = name;
 	}
 
-	public double getMoyen() {
-		return moyen;
+	public double getAverage() {
+		return average;
 	}
 
-	public void setMoyen(double moyen) {
-		this.moyen = moyen;
+	public void setAverage(double average) {
+		this.average = average;
 	}
 
 	public List<Project> getProjects() {
 		return projects;
 	}
 
-	public void setProjects(List<Project> projects) {
-		if (projects.size() > 3) {
-			throw new IllegalArgumentException("A student can be associated with a maximum of 3 projects.");
-		}
-		this.projects = projects;
-	}
+
 
 	public void addProject(Project project,int number) {
 		if (projects.size() >= number) {

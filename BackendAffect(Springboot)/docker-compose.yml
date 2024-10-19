@@ -1,9 +1,9 @@
 version: '3'
 services:
   spring-mysqldbi:
-    image: tayeblagha/affectationbackend
+    image: smoothcoode/studentbackend
     environment:
-      - MYSQL_HOST=mysqldbi
+      - MYSQL_HOST=root
       - MYSQL_USER=root
       - MYSQL_PASSWORD=root
       - MYSQL_PORT=3306
@@ -16,7 +16,7 @@ services:
     image: mysql:8.0.33
     environment:
       - MYSQL_ROOT_PASSWORD=root
-      - MYSQL_DATABASE=AffectationDatabase
+      - MYSQL_DATABASE=studentmanagement
     networks:
       - spring-mysql
 

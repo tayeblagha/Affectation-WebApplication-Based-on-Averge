@@ -1,0 +1,53 @@
+ng new --no-standalone studentfrontend
+in app.module.ts
+	import { FormsModule } from '@angular/forms'; // Import FormsModule here
+	import { provideHttpClient } from '@angular/common/http';
+
+install tailwindcss 
+	npm install -D tailwindcss postcss autoprefixer
+	npx tailwindcss init
+
+Create student and project class
+
+ng generate environments
+
+
+ng g class className
+ng g component component 
+
+docker exec -it   /bin/bash
+server {
+    listen 80;
+    server_name 172.179.236.84;  # Public IP address or domain name
+
+    # Frontend (Angular)
+    location / {
+        proxy_pass http://localhost:4200;  # Angular app running on port 4200
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_read_timeout 90;
+    }
+
+    # Backend (Spring Boot)
+    location /api/ {
+        proxy_pass http://localhost:9090/;  # Spring Boot app running on port 9090
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_read_timeout 90;
+    }
+}
+
+docker run --name mongodb -d -p 27017:27017 mongo:4.4
+docker run --network=host -e MYSQL_HOST=host.docker.internal smoothlocal
+
+
+
+
+
+
+
+
